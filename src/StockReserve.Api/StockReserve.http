@@ -1,0 +1,67 @@
+@host = http://localhost:5080
+@keyboard = 11111111-1111-1111-1111-111111111111
+@mouse = 22222222-2222-2222-2222-222222222222
+
+### Health
+GET {{host}}/health
+
+### 1. List products  <-- PRZEWIDŹ WYNIK ZANIM WYŚLESZ
+GET {{host}}/products
+
+### 1b. List products, explicit paging
+GET {{host}}/products?page=1&pageSize=2
+
+### 2. Reserve 2 keyboards (OnHand 5)
+POST {{host}}/reservations
+Content-Type: application/json
+
+{
+  "productId": "{{keyboard}}",
+  "quantity": 2,
+  "customerEmail": "ania@example.com"
+}
+
+### 3. Check the product after the reservation
+GET {{host}}/products/{{keyboard}}
+
+### 4. Reserve the only limited-edition mouse
+POST {{host}}/reservations
+Content-Type: application/json
+
+{
+  "productId": "{{mouse}}",
+  "quantity": 1,
+  "customerEmail": "bartek@example.com"
+}
+
+### 5. Try to reserve the mouse again -> expect 409
+POST {{host}}/reservations
+Content-Type: application/json
+
+{
+  "productId": "{{mouse}}",
+  "quantity": 1,
+  "customerEmail": "celina@example.com"
+}
+
+### 6. Blocked customer -> expect 403
+POST {{host}}/reservations
+Content-Type: application/json
+
+{
+  "productId": "{{keyboard}}",
+  "quantity": 1,
+  "customerEmail": "oszust@fraud.example"
+}
+
+### 7. Get a reservation (paste the id from the response above)
+GET {{host}}/reservations/00000000-0000-0000-0000-000000000000
+
+### 8. Confirm a reservation (paste the id)
+POST {{host}}/reservations/00000000-0000-0000-0000-000000000000/confirm
+
+### 9. Cancel a reservation (paste the id)
+POST {{host}}/reservations/00000000-0000-0000-0000-000000000000/cancel
+
+### 10. Force an expiry sweep now (instead of waiting for the worker tick)
+POST {{host}}/admin/sweep
